@@ -19,10 +19,10 @@ function defaults(obj) {
   return obj;
 }
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function addQueryString(url, params) {
-  if (params && (typeof params === 'undefined' ? 'undefined' : _typeof(params)) === 'object') {
+  if (params && (typeof params === 'undefined' ? 'undefined' : _typeof$1(params)) === 'object') {
     var queryString = '',
         e = encodeURIComponent;
 
@@ -44,7 +44,7 @@ function addQueryString(url, params) {
 // https://gist.github.com/Xeoncross/7663273
 function ajax(url, options, callback, data, cache) {
 
-  if (data && (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object') {
+  if (data && (typeof data === 'undefined' ? 'undefined' : _typeof$1(data)) === 'object') {
     if (!cache) {
       data['_t'] = new Date();
     }
@@ -89,6 +89,8 @@ function ajax(url, options, callback, data, cache) {
   }
 }
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -100,7 +102,8 @@ function getDefaults() {
     allowMultiLoading: false,
     parse: JSON.parse,
     crossDomain: false,
-    ajax: ajax
+    ajax: ajax,
+    preloaded: {}
   };
 }
 
@@ -152,20 +155,25 @@ var Backend = function () {
     value: function loadUrl(url, callback) {
       var _this = this;
 
-      this.options.ajax(url, this.options, function (data, xhr) {
-        if (xhr.status >= 500 && xhr.status < 600) return callback('failed loading ' + url, true /* retry */);
-        if (xhr.status >= 400 && xhr.status < 500) return callback('failed loading ' + url, false /* no retry */);
+      var preloadedTranslation = this.options.preloaded[url];
+      if (preloadedTranslation && (typeof preloadedTranslation === 'undefined' ? 'undefined' : _typeof(preloadedTranslation)) === 'object') {
+        callback(null, preloadedTranslation);
+      } else {
+        this.options.ajax(url, this.options, function (data, xhr) {
+          if (xhr.status >= 500 && xhr.status < 600) return callback('failed loading ' + url, true /* retry */);
+          if (xhr.status >= 400 && xhr.status < 500) return callback('failed loading ' + url, false /* no retry */);
 
-        var ret = void 0,
-            err = void 0;
-        try {
-          ret = _this.options.parse(data, url);
-        } catch (e) {
-          err = 'failed parsing ' + url + ' to json';
-        }
-        if (err) return callback(err, false);
-        callback(null, ret);
-      });
+          var ret = void 0,
+              err = void 0;
+          try {
+            ret = _this.options.parse(data, url);
+          } catch (e) {
+            err = 'failed parsing ' + url + ' to json';
+          }
+          if (err) return callback(err, false);
+          callback(null, ret);
+        });
+      }
     }
   }, {
     key: 'create',

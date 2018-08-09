@@ -8,7 +8,8 @@ function getDefaults() {
     allowMultiLoading: false,
     parse: JSON.parse,
     crossDomain: false,
-    ajax: ajax
+    ajax: ajax,
+    preloaded: {},
   };
 }
 
@@ -47,19 +48,24 @@ class Backend {
   }
 
   loadUrl(url, callback) {
-    this.options.ajax(url, this.options, (data, xhr) => {
-      if (xhr.status >= 500 && xhr.status < 600) return callback('failed loading ' + url, true /* retry */);
-      if (xhr.status >= 400 && xhr.status < 500) return callback('failed loading ' + url, false /* no retry */);
+    const preloadedTranslation = this.options.preloaded[url];
+    if (preloadedTranslation && typeof preloadedTranslation === 'object') {
+      callback(null, preloadedTranslation);
+    } else {
+      this.options.ajax(url, this.options, (data, xhr) => {
+        if (xhr.status >= 500 && xhr.status < 600) return callback('failed loading ' + url, true /* retry */);
+        if (xhr.status >= 400 && xhr.status < 500) return callback('failed loading ' + url, false /* no retry */);
 
-      let ret, err;
-      try {
-        ret = this.options.parse(data, url);
-      } catch (e) {
-        err = 'failed parsing ' + url + ' to json';
-      }
-      if (err) return callback(err, false);
-      callback(null, ret);
-    });
+        let ret, err;
+        try {
+          ret = this.options.parse(data, url);
+        } catch (e) {
+          err = 'failed parsing ' + url + ' to json';
+        }
+        if (err) return callback(err, false);
+        callback(null, ret);
+      });
+    }
   }
 
   create(languages, namespace, key, fallbackValue) {
