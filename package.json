@@ -8,11 +8,11 @@
     "i18next",
     "i18next-backend"
   ],
-  "homepage": "https://github.com/i18next/i18next-xhr-backend",
-  "bugs": "https://github.com/i18next/i18next-xhr-backend/issues",
+  "homepage": "https://github.com/loveholidays/lh-i18next-xhr-backend",
+  "bugs": "https://github.com/loveholidays/lh-i18next-xhr-backend/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/i18next/i18next-xhr-backend"
+    "url": "https://github.com/loveholidays/lh-i18next-xhr-backend"
   },
   "dependencies": {},
   "devDependencies": {
